@@ -15,3 +15,4 @@ venv.bak/
 # IDE files
 .vscode/
 .idea/
+aienv
