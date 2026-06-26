@@ -1,12 +1,43 @@
 version: '3.8'
 
 services:
-  api:
+  ai-service:
     build: .
     ports:
       - "8004:8004"
     env_file:
       - .env
+    environment:
+      CHROMA_DB_DIR: /data/vectordb/faces
+      GESTURE_DB_DIR: /data/vectordb/gestures
+      UPLOAD_DIR: /data/uploads/operators
+      WHISPER_MODEL: medium
+      MEDIAPIPE_DETECTION_CONFIDENCE: "0.7"
+      MEDIAPIPE_TRACKING_CONFIDENCE: "0.6"
+
+      XDG_CACHE_HOME: /data/cache
+
     volumes:
       - .:/app
+      - ai_vectordb:/data/vectordb/faces
+      - ai_gesture_vectordb:/data/vectordb/gestures
+      - ai_uploads:/data/uploads
+      - ai_model_cache:/data/cache
     command: uvicorn app.main:app --host 0.0.0.0 --port 8004 --reload
+    networks:
+      - api_gateway_network
+
+volumes:
+  ai_vectordb:
+    driver: local
+  ai_gesture_vectordb:
+    driver: local
+  ai_uploads:
+    driver: local
+  ai_model_cache:
+    driver: local
+
+networks:
+  api_gateway_network:
+    external: true
+    name: 05-grabber-api-gateway_default
