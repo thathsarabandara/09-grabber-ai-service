@@ -21,15 +21,50 @@ def _get_active_tasks() -> set:
         db.close()
 
 
+def _get_gesture_config() -> tuple:
+    """Return (mappings_dict, control_enabled, safety_enabled) from DB."""
+    db = SessionLocal()
+    try:
+        from app.models.gesture import GestureMapping, GestureSetting
+        setting = db.query(GestureSetting).first()
+        control_enabled = setting.control_enabled if setting else False
+        safety_enabled = setting.safety_enabled if setting else True
+        
+        mappings = db.query(GestureMapping).all()
+        mappings_dict = {m.gesture_name: m.action for m in mappings}
+        
+        return mappings_dict, control_enabled, safety_enabled
+    except Exception as e:
+        print(f"[Stream] Failed to load gesture config: {e}", flush=True)
+        return {}, False, True
+    finally:
+        db.close()
+
+
+def _get_operator_roles() -> dict:
+    """Return a dictionary mapping operator name to access level."""
+    db = SessionLocal()
+    try:
+        from app.models import Operator
+        operators = db.query(Operator).all()
+        return {op.name: op.access_level for op in operators}
+    except Exception as e:
+        print(f"[Stream] Failed to load operator roles: {e}", flush=True)
+        return {}
+    finally:
+        db.close()
+
+
 async def mjpeg_stream_generator(
     camera_url: str,
     conf_threshold: float = 0.60,
     allowed_classes: List[str] = None,
-    allowed_zones: List[str] = None
+    allowed_zones: List[str] = None,
+    robot_id: str = None
 ):
     """
     Fetches the raw camera stream, decodes each frame, overlays active computer
-    vision outputs (object detection labels, face recognition boxes),
+    vision outputs (object detection labels, face recognition boxes, gesture overlays),
     re-encodes to JPEG, and streams to the client.
 
     Task states are re-read from the DB every 30 frames (~1s at 30fps) so
@@ -47,6 +82,11 @@ async def mjpeg_stream_generator(
                 buffer = b""
                 frame_counter = 0
                 active_tasks: set = set()
+                gesture_mappings: dict = {}
+                gesture_control_enabled: bool = False
+                gesture_safety_enabled: bool = True
+                last_action: str = None
+                operator_roles: dict = {}
 
                 async for chunk in response.aiter_bytes():
                     buffer += chunk
@@ -60,6 +100,10 @@ async def mjpeg_stream_generator(
                             # Re-query DB every 30 frames to pick up task state changes
                             if frame_counter % 30 == 0:
                                 active_tasks = _get_active_tasks()
+                                if "gesture" in active_tasks:
+                                    gesture_mappings, gesture_control_enabled, gesture_safety_enabled = _get_gesture_config()
+                                if "face-rec" in active_tasks:
+                                    operator_roles = _get_operator_roles()
                             frame_counter += 1
 
                             # Decode JPEG frame to OpenCV BGR image
@@ -78,7 +122,21 @@ async def mjpeg_stream_generator(
 
                                 # Face recognition overlay
                                 if "face-rec" in active_tasks:
-                                    frame = face_recognizer.process_frame(frame)
+                                    frame = face_recognizer.process_frame(frame, operator_roles=operator_roles)
+
+                                # Gesture recognition overlay & action dispatch
+                                if "gesture" in active_tasks:
+                                    from app.core.state import gesture_controller
+                                    frame, detected_action = gesture_controller.process_frame(frame, gesture_mappings)
+                                    
+                                    # Control Dispatch logic
+                                    if gesture_control_enabled and robot_id and detected_action:
+                                        if detected_action != last_action:
+                                            gesture_controller.publish_robot_command(robot_id, detected_action)
+                                    
+                                    last_action = detected_action
+                                else:
+                                    last_action = None
 
                                 # Re-encode back to JPEG
                                 _, encoded_img = cv2.imencode(".jpg", frame)
@@ -104,7 +162,8 @@ def get_annotated_stream(
     camera_url: str,
     conf_threshold: float = 0.60,
     classes: str = None,
-    zones: str = None
+    zones: str = None,
+    robot_id: str = None
 ):
     """Serves the real-time annotated image stream from the ESP32 camera feed."""
     allowed_classes = [c.strip() for c in classes.split(",")] if classes else None
@@ -115,7 +174,8 @@ def get_annotated_stream(
             camera_url=camera_url,
             conf_threshold=conf_threshold,
             allowed_classes=allowed_classes,
-            allowed_zones=allowed_zones
+            allowed_zones=allowed_zones,
+            robot_id=robot_id
         ),
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
