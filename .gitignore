@@ -16,3 +16,6 @@ venv.bak/
 .vscode/
 .idea/
 aienv
+
+yolo*
+models/*
