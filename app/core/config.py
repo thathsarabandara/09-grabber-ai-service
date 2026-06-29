@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     WHISPER_MODEL: str = "base"
     MEDIAPIPE_DETECTION_CONFIDENCE: float = 0.7
     MEDIAPIPE_TRACKING_CONFIDENCE: float = 0.6
+
+    MQTT_BROKER: str = "grabber-mqtt-server"
+    MQTT_PORT: int = 1883
+    MQTT_USERNAME: str = "thathsara"
+    MQTT_PASSWORD: str = "BandaPutha"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
