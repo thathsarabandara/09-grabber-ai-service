@@ -11,7 +11,7 @@ services:
       CHROMA_DB_DIR: /data/vectordb/faces
       GESTURE_DB_DIR: /data/vectordb/gestures
       UPLOAD_DIR: /data/uploads/operators
-      WHISPER_MODEL: medium
+      WHISPER_MODEL: base
       MEDIAPIPE_DETECTION_CONFIDENCE: "0.7"
       MEDIAPIPE_TRACKING_CONFIDENCE: "0.6"
 
@@ -23,6 +23,13 @@ services:
       - ai_gesture_vectordb:/data/vectordb/gestures
       - ai_uploads:/data/uploads
       - ai_model_cache:/data/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     command: uvicorn app.main:app --host 0.0.0.0 --port 8004 --reload
     networks:
       - api_gateway_network
