@@ -19,3 +19,9 @@ aienv
 
 yolo*
 models/*
+uploads/
+test.db
+.coverage
+.pytest_cache/
+htmlcov/
+.cache/
