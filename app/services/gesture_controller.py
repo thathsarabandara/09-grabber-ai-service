@@ -109,7 +109,7 @@ class GestureController:
 
     def _load_mediapipe(self):
         try:
-            import mediapipe as mp
+            import mediapipe as mp  # noqa: F401
             from mediapipe.tasks import python as mp_tasks
             from mediapipe.tasks.python import vision
 

@@ -17,7 +17,6 @@ Model size is controlled by the WHISPER_MODEL setting (default: "base").
 """
 
 import os
-import io
 import tempfile
 import random
 from typing import List, Optional

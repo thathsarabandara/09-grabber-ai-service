@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.models import VoiceSetting, VoiceCommand
-import random
 
 router = APIRouter()
 

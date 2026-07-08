@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List
+from typing import Dict
 
 class PickPlaceSimulator:
     def __init__(self):

@@ -8,12 +8,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def init_db():
-    import app.models.operator
-    import app.models.gesture
-    import app.models.voice
-    import app.models.pick_place
-    import app.models.sorting
-    import app.models.task_state
+    import app.models.operator  # noqa: F401
+    import app.models.gesture   # noqa: F401
+    import app.models.voice     # noqa: F401
+    import app.models.pick_place  # noqa: F401
+    import app.models.sorting   # noqa: F401
+    import app.models.task_state  # noqa: F401
     Base.metadata.create_all(bind=engine)
 
 def get_db():

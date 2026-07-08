@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import os
 import uuid
-from pathlib import Path
 from app.core.config import settings
 
 
