@@ -16,8 +16,9 @@ ENV PIP_DEFAULT_TIMEOUT=1000
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --default-timeout=1000 -r requirements.txt && \
-    pip uninstall -y opencv-python opencv-python-headless && \
-    pip install opencv-python-headless
+    pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python opencv-contrib-python-headless && \
+    pip install opencv-contrib-python-headless
+
 
 # Stage 2: Runtime image
 FROM python:3.11-slim AS runner
