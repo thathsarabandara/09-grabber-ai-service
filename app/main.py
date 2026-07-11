@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import health, tasks, status, face, stream, gesture, voice, pick_place, sorting
 from app.core.db import init_db
 from app.core.config import settings
+from prometheus_fastapi_instrumentator import Instrumentator
 import os
 
 # Initialize database schemas
@@ -22,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Prometheus Instrumentation
+Instrumentator().instrument(app).expose(app)
 
 from fastapi.staticfiles import StaticFiles
 
