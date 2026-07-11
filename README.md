@@ -8,7 +8,7 @@
 [![Vector DB](https://img.shields.io/badge/Vector%20DB-ChromaDB-blue.svg?style=flat-square)]()
 [![Audio](https://img.shields.io/badge/Speech-OpenAI%20Whisper-brightgreen.svg?style=flat-square)]()
 [![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg?style=flat-square)]()
-
+[![CI](https://github.com/thathsarabandara/09-grabber-ai-service/actions/workflows/ci.yml/badge.svg?branch=main)]()
 ---
 
 ## 🎥 Video Demonstration
@@ -220,6 +220,19 @@ Build and run the container locally:
 # Deploys with local model cache volume mapping and GPU reservations
 docker compose up -d --build
 ```
+
+
+## ⚙️ CI/CD Pipeline
+
+This project uses **GitHub Actions** for Continuous Integration and Deployment.
+The pipeline consists of the following steps:
+- **Checkout**: Fetch source code.
+- **Environment**: Set up Python 3.11.
+- **Install Dependencies**: Install lightweight CI tools.
+- **Lint**: Run security scan (bandit) and lint (flake8).
+- **Test**: Run unit tests with coverage (pytest).
+- **Build**: Build Docker image.
+- **Push**: Push to GitHub Container Registry (GHCR).
 
 ---
 
