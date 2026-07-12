@@ -72,6 +72,9 @@ pipeline {
         }
 
         stage('Push') {
+            when {
+                branch 'main'
+            }
             steps {
                 echo "Pushing image to GHCR: ${IMAGE_NAME}"
                 withCredentials([usernamePassword(
